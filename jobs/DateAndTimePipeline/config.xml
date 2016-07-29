@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.4">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.20.0">
+          <spec></spec>
+        </com.cloudbees.jenkins.GitHubPushTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+    <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.20.0">
+      <projectUrl>https://github.com/sahota14/date-and-time/</projectUrl>
+      <displayName></displayName>
+    </com.coravy.hudson.plugins.github.GithubProjectProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.10">
+    <script>node{
+   // Mark the code checkout &apos;stage&apos;....
+   stage &apos;Checkout&apos;
+
+   // Get some code from a GitHub repository
+   git url: &apos;https://github.com/sahota14/date-and-time&apos;
+
+   // Get the maven tool.
+   // ** NOTE: This &apos;M3&apos; maven tool must be configured
+   // **       in the global configuration.           
+   def mvnHome = tool &apos;m3&apos;
+
+   // Mark the code build &apos;stage&apos;....
+   stage &apos;Build&apos;
+   // Run the maven build
+//   sh cd &quot;SimpleMavenWebapp &amp;&amp; mvn package&quot;
+   sh &quot;${mvnHome}/bin/mvn -Dmaven.test.failure.ignore clean package&quot;
+   step([$class: &apos;JUnitResultArchiver&apos;, testResults: &apos;**/target/surefire-reports/TEST-*.xml&apos;])
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>
